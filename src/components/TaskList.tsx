@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { getAllTasks, Task } from '../api/TasksApi';
-import { Pagination, Typography, TextField, Button, Select, MenuItem, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Pagination, Typography, TextField, Button, Select, MenuItem, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, IconButton, Box } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const TaskList: React.FC = () => {
   const [page, setPage] = useState('1');
@@ -12,8 +14,6 @@ const TaskList: React.FC = () => {
   );
 
   const handlePageChange = (newPage: string) => {
-    console.log("newPage",newPage);
-    
     setPage(newPage);
   };
 
@@ -46,16 +46,29 @@ const TaskList: React.FC = () => {
           <TableHead>
             <TableRow>
               <TableCell>Title</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>Completed</TableCell>
+              <TableCell align="center" width="15%">Completed</TableCell>
+              <TableCell align="center" width="15%">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {tasks?.content?.map((task: Task) => (
               <TableRow key={task.id}>
                 <TableCell>{task.title}</TableCell>
-                <TableCell>{task.description}</TableCell>
-                <TableCell>{task.completed ? 'Yes' : 'No'}</TableCell>
+                <TableCell>
+                  <Box display="flex" justifyContent="center">
+                    <Checkbox checked={task.completed} />
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Box display="flex" justifyContent="center">
+                    <IconButton color="primary">
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton color="error">
+                      <DeleteIcon />
+                    </IconButton>
+                  </Box>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -79,7 +92,6 @@ const TaskList: React.FC = () => {
       </div>
     </div>
   );
-  
 };
 
 export default TaskList;
