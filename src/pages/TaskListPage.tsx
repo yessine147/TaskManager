@@ -21,12 +21,12 @@ import {
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import DeleteConfirmation from "./DeleteConfirmation";
+import DeleteConfirmation from "../components/DeleteConfirmation";
 import { useMutation, useQueryClient } from "react-query";
 import { deleteTask } from "../api/TasksApi";
-import TaskDetail from "./TaskDetail";
+import TaskDetail from "../components/TaskDetail";
 
-const TaskList: React.FC = () => {
+const TaskListPage: React.FC = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [deleteTaskId, setDeleteTaskId] = useState<number | null>(null);
@@ -34,7 +34,7 @@ const TaskList: React.FC = () => {
   const queryClient = useQueryClient();
 
   const [page, setPage] = useState("1");
-  const [pageSize, setPageSize] = useState("10");
+  const [pageSize, setPageSize] = useState("5");
   const [query, setQuery] = useState("");
   const { data: tasks, isLoading } = useQuery(
     ["tasks", page, pageSize, query],
@@ -188,4 +188,4 @@ const TaskList: React.FC = () => {
   );
 };
 
-export default TaskList;
+export default TaskListPage;

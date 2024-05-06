@@ -4,8 +4,9 @@ import {
   Routes,
   BrowserRouter as Router,
 } from "react-router-dom";
-import TaskList from "./components/TaskList";
+import TaskListPage from "./pages/TaskListPage";
 import { Navbar } from "./components/Navbar";
+import CreateTaskPage from "./pages/CreateTaskPage";
 
 function App() {
   return (
@@ -13,7 +14,8 @@ function App() {
       <Navbar />
       <div className="container mt-3">
         <Routes>
-          <Route path="/tasks" element={<TaskList />} />
+          <Route path="/tasks" element={<TaskListPage />} />
+          <Route path="/add" element={<CreateTaskPage />} />
           <Route path="/*" element={<Navigate to="/tasks" replace />} />
         </Routes>
       </div>
