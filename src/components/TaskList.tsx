@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { getAllTasks, Task } from '../api/TasksApi';
-import { Pagination, Typography, TextField, Button, Select, MenuItem, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, IconButton, Box } from '@mui/material';
+import { Pagination, Typography, TextField, Button, Select, MenuItem, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, IconButton, Box, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import TaskDetail from './TaskDetail';
 
 const TaskList: React.FC = () => {
   const [page, setPage] = useState('1');
@@ -12,6 +13,9 @@ const TaskList: React.FC = () => {
   const { data: tasks, isLoading } = useQuery(['tasks', page, pageSize, query], () =>
     getAllTasks(page, pageSize, query)
   );
+
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const handlePageChange = (newPage: string) => {
     setPage(newPage);
@@ -23,6 +27,15 @@ const TaskList: React.FC = () => {
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(event.target.value);
+  };
+
+  const handleRowClick = (task: Task) => {
+    setSelectedTask(task);
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
   };
 
   // if (isLoading) return <div>Loading...</div>;
@@ -53,7 +66,7 @@ const TaskList: React.FC = () => {
           <TableBody>
             {tasks?.content?.map((task: Task) => (
               <TableRow key={task.id}>
-                <TableCell>{task.title}</TableCell>
+                <TableCell onClick={() => handleRowClick(task)} style={{ cursor: 'pointer' }}>{task.title}</TableCell>
                 <TableCell>
                   <Box display="flex" justifyContent="center">
                     <Checkbox checked={task.completed} />
@@ -74,6 +87,7 @@ const TaskList: React.FC = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      <TaskDetail open={openModal} task={selectedTask} onClose={handleCloseModal} />
       <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}>
         <Pagination
           count={tasks?.totalPages}
