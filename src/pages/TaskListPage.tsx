@@ -28,79 +28,112 @@ import TaskDetail from "../components/TaskDetail";
 import UpdateTask from "../components/UpdateTask";
 
 const TaskListPage: React.FC = () => {
+  // Snackbar hook for displaying notifications
   const { enqueueSnackbar } = useSnackbar();
+
+  // State for handling delete confirmation dialog
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [deleteTaskId, setDeleteTaskId] = useState<number | null>(null);
+
+  // State for managing selected task
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
+  // State for update dialogs visibility
+  const [openUpdate, setOpenUpdate] = useState(false);
+  const [openDetails, setOpenDetails] = useState(false);
+
+  // Query client for managing query cache
   const queryClient = useQueryClient();
 
+  // State for pagination and search query
   const [page, setPage] = useState("1");
   const [pageSize, setPageSize] = useState("5");
   const [query, setQuery] = useState("");
+
+  // Query to fetch tasks from the server
   const { data: tasks, isLoading } = useQuery(
     ["tasks", page, pageSize, query],
-    () => getAllTasks(page, pageSize, query)
+    () => getAllTasks(page, pageSize, query),
+    {
+      onError: () => {
+        // Show error notification
+        enqueueSnackbar("Failed to load tasks", { variant: "error" });
+      },
+    }
   );
 
+  // Mutation for deleting tasks
   const { mutate: deleteTaskMutation, isLoading: isDeleting } = useMutation(
     deleteTask,
     {
       onSuccess: () => {
+        // Invalidate the tasks query to trigger a refetch
         queryClient.invalidateQueries("tasks");
+        // Show success notification
         enqueueSnackbar("Task deleted successfully", { variant: "success" });
+        // Close delete confirmation dialog
         setDeleteConfirmationOpen(false);
       },
       onError: () => {
+        // Show error notification
         enqueueSnackbar("Failed to delete task", { variant: "error" });
+        // Close delete confirmation dialog
         setDeleteConfirmationOpen(false);
       },
     }
   );
-  const [openDetails, setOpenDetails] = useState(false);
-  const [openUpdate, setOpenUpdate] = useState(false);
 
+  // Function to handle page change in pagination
   const handlePageChange = (newPage: string) => {
     setPage(newPage);
   };
 
+  // Function to handle page size change in pagination
   const handlePageSizeChange = (newPageSize: string) => {
     setPageSize(newPageSize);
   };
 
+  // Function to handle search input change
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(event.target.value);
   };
 
+  // Function to handle row click and open task details
   const handleRowClick = (task: Task) => {
     setSelectedTask(task);
     setOpenDetails(true);
   };
 
+  // Function to close task details dialog
   const handleCloseDetails = () => {
     setOpenDetails(false);
   };
 
+  // Function to handle delete button click and open delete confirmation dialog
   const handleDeleteClick = (taskId: number) => {
     setDeleteTaskId(taskId);
     setDeleteConfirmationOpen(true);
   };
 
+  // Function to handle delete confirmation
   const handleDeleteConfirm = () => {
     if (deleteTaskId) {
       deleteTaskMutation(deleteTaskId);
     }
   };
 
+  // Function to close update task dialog
   const handleCloseUpdateTask = () => {
     setOpenUpdate(false);
   };
 
+  // Function to handle update button click and open update task dialog
   const handleUpdateClick = (task: Task) => {
     setSelectedTask(task);
     setOpenUpdate(true);
   };
 
+  // Function to handle checkbox change and update task completion status
   const handleCheckBoxChange = async (task: Task) => {
     setSelectedTask(task);
     try {
@@ -110,13 +143,17 @@ const TaskListPage: React.FC = () => {
     }
   };
 
+  // Mutation for updating task completion status
   const updateTaskMutation = useMutation(
+    // Update task completion status by toggling it
     (task: Task) => updateTask(task.id, { completed: !task.completed }),
     {
       onSuccess: () => {
+        // Invalidate the tasks query to trigger a refetch
         queryClient.invalidateQueries("tasks");
       },
       onError: () => {
+        // Show error notification
         enqueueSnackbar("Error updating task", { variant: "error" });
       },
     }
@@ -212,11 +249,13 @@ const TaskListPage: React.FC = () => {
           <MenuItem value="20">20 per page</MenuItem>
         </Select>
       </div>
+      {/* Task detail dialog */}
       <TaskDetail
         open={openDetails}
         task={selectedTask}
         onClose={handleCloseDetails}
       />
+      {/* Update task dialog */}
       {selectedTask && (
         <UpdateTask
           open={openUpdate}
@@ -224,6 +263,7 @@ const TaskListPage: React.FC = () => {
           onClose={handleCloseUpdateTask}
         />
       )}
+      {/* Delete confirmation dialog */}
       <DeleteConfirmation
         open={deleteConfirmationOpen}
         onConfirm={handleDeleteConfirm}

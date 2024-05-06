@@ -10,12 +10,14 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
+// Props for the DeleteConfirmationDialog component
 interface Props {
-  open: boolean;
-  onConfirm: () => void;
-  onCancel: () => void;
+  open: boolean; // Flag to control the visibility of the dialog
+  onConfirm: () => void; // Callback function triggered when deletion is confirmed
+  onCancel: () => void; // Callback function triggered when deletion is cancelled
 }
 
+// DeleteConfirmationDialog component for confirming task deletion
 const DeleteConfirmationDialog: React.FC<Props> = ({
   open,
   onConfirm,
