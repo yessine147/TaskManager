@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery } from "react-query";
 import { useSnackbar } from "notistack";
-import { getAllTasks, Task } from "../api/TasksApi";
+import { getAllTasks, Task, updateTask } from "../api/TasksApi";
 import {
   Pagination,
   Typography,
@@ -31,15 +31,15 @@ const TaskListPage: React.FC = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [deleteTaskId, setDeleteTaskId] = useState<number | null>(null);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null); 
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const queryClient = useQueryClient();
 
-  const [page, setPage] = useState('1');
-  const [pageSize, setPageSize] = useState('5');
-  const [query, setQuery] = useState('');
+  const [page, setPage] = useState("1");
+  const [pageSize, setPageSize] = useState("5");
+  const [query, setQuery] = useState("");
   const { data: tasks, isLoading } = useQuery(
-    ['tasks', page, pageSize, query],
+    ["tasks", page, pageSize, query],
     () => getAllTasks(page, pageSize, query)
   );
 
@@ -47,12 +47,12 @@ const TaskListPage: React.FC = () => {
     deleteTask,
     {
       onSuccess: () => {
-        queryClient.invalidateQueries('tasks');
-        enqueueSnackbar('Task deleted successfully', { variant: 'success' });
+        queryClient.invalidateQueries("tasks");
+        enqueueSnackbar("Task deleted successfully", { variant: "success" });
         setDeleteConfirmationOpen(false);
       },
       onError: () => {
-        enqueueSnackbar('Failed to delete task', { variant: 'error' });
+        enqueueSnackbar("Failed to delete task", { variant: "error" });
         setDeleteConfirmationOpen(false);
       },
     }
@@ -77,7 +77,7 @@ const TaskListPage: React.FC = () => {
     setOpenDetails(true);
   };
 
-  const handleCloseModal = () => {
+  const handleCloseDetails = () => {
     setOpenDetails(false);
   };
 
@@ -92,20 +92,45 @@ const TaskListPage: React.FC = () => {
     }
   };
 
+  const handleCloseUpdateTask = () => {
+    setOpenUpdate(false);
+  };
+
   const handleUpdateClick = (task: Task) => {
     setSelectedTask(task);
     setOpenUpdate(true);
   };
 
+  const handleCheckBoxChange = async (task: Task) => {
+    setSelectedTask(task);
+    try {
+      await updateTaskMutation.mutateAsync(task);
+    } catch (error) {
+      console.error("Error updating task:", error);
+    }
+  };
+
+  const updateTaskMutation = useMutation(
+    (task: Task) => updateTask(task.id, { completed: !task.completed }),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries("tasks");
+      },
+      onError: () => {
+        enqueueSnackbar("Error updating task", { variant: "error" });
+      },
+    }
+  );
+
   return (
     <div>
       <Typography variant="h4">Task List</Typography>
-      <div style={{ marginBottom: '16px' }}>
+      <div style={{ marginBottom: "16px" }}>
         <TextField
           type="text"
           value={query}
           onChange={handleSearchChange}
-          placeholder="Search tasks..."
+          placeholder="Search by title"
           variant="outlined"
           size="small"
           fullWidth
@@ -129,21 +154,23 @@ const TaskListPage: React.FC = () => {
               <TableRow key={task.id}>
                 <TableCell
                   onClick={() => handleRowClick(task)}
-                  style={{ cursor: 'pointer' }}
+                  style={{ cursor: "pointer" }}
                 >
                   {task.title}
                 </TableCell>
                 <TableCell>
                   <Box display="flex" justifyContent="center">
-                    <Checkbox checked={task.completed} />
+                    <Checkbox
+                      checked={task.completed}
+                      onChange={() => handleCheckBoxChange(task)}
+                    />
                   </Box>
                 </TableCell>
                 <TableCell>
                   <Box display="flex" justifyContent="center">
-                    <IconButton 
-                    color="primary"
-                    onClick={() => handleUpdateClick(task)}
-
+                    <IconButton
+                      color="primary"
+                      onClick={() => handleUpdateClick(task)}
                     >
                       <EditIcon />
                     </IconButton>
@@ -162,7 +189,7 @@ const TaskListPage: React.FC = () => {
         </Table>
       </TableContainer>
       <div
-        style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}
+        style={{ marginTop: "16px", display: "flex", justifyContent: "center" }}
       >
         <Pagination
           count={tasks?.totalPages}
@@ -173,7 +200,7 @@ const TaskListPage: React.FC = () => {
         />
       </div>
       <div
-        style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}
+        style={{ marginTop: "16px", display: "flex", justifyContent: "center" }}
       >
         <Select
           value={pageSize}
@@ -188,13 +215,13 @@ const TaskListPage: React.FC = () => {
       <TaskDetail
         open={openDetails}
         task={selectedTask}
-        onClose={handleCloseModal}
+        onClose={handleCloseDetails}
       />
       {selectedTask && (
         <UpdateTask
           open={openUpdate}
           task={selectedTask}
-          onClose={() => setSelectedTask(null)}
+          onClose={handleCloseUpdateTask}
         />
       )}
       <DeleteConfirmation

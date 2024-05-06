@@ -16,6 +16,7 @@ import DeleteConfirmation from "./DeleteConfirmation";
 import { useMutation, useQueryClient } from "react-query";
 import { deleteTask } from "../api/TasksApi";
 import { useSnackbar } from "notistack";
+import UpdateTask from "./UpdateTask";
 
 interface Props {
   open: boolean;
@@ -27,6 +28,7 @@ const TaskDetail: React.FC<Props> = ({ open, task, onClose }) => {
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
+  const [openUpdate, setOpenUpdate] = useState(false);
 
   const { mutate: deleteTaskMutation, isLoading: isDeleting } = useMutation(
     deleteTask,
@@ -55,6 +57,15 @@ const TaskDetail: React.FC<Props> = ({ open, task, onClose }) => {
     setDeleteConfirmationOpen(false);
   };
 
+  const handleUpdateClick = () => {
+    setOpenUpdate(true);
+  };
+
+  const handleCloseUpdateTask = () => {
+    setOpenUpdate(false);
+    onClose();
+  };
+
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle className="text-center">
@@ -79,7 +90,7 @@ const TaskDetail: React.FC<Props> = ({ open, task, onClose }) => {
         </Box>
       </DialogContent>
       <DialogActions sx={{ justifyContent: "center" }}>
-        <IconButton color="primary" sx={{ mr: 2 }}>
+        <IconButton color="primary" sx={{ mr: 2 }} onClick={handleUpdateClick}>
           <EditIcon />
         </IconButton>
         <IconButton
@@ -96,6 +107,13 @@ const TaskDetail: React.FC<Props> = ({ open, task, onClose }) => {
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
       />
+      {task && (
+        <UpdateTask
+          open={openUpdate}
+          task={task}
+          onClose={handleCloseUpdateTask}
+        />
+      )}
     </Dialog>
   );
 };

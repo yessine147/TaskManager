@@ -9,7 +9,6 @@ import {
   FormControlLabel,
   Checkbox,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "react-query";
 import { updateTask, Task } from "../api/TasksApi";
 import { useSnackbar } from "notistack";
@@ -21,7 +20,6 @@ interface Props {
 }
 
 const UpdateTask: React.FC<Props> = ({ open, task, onClose }) => {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
   const [updatedTask, setTask] = useState(task);
@@ -33,7 +31,6 @@ const UpdateTask: React.FC<Props> = ({ open, task, onClose }) => {
         queryClient.invalidateQueries("tasks");
         onClose();
         enqueueSnackbar("Task updated successfully", { variant: "success" });
-        navigate("/tasks");
       },
       onError: () => {
         enqueueSnackbar("Error updating task", { variant: "error" });
