@@ -25,19 +25,21 @@ import DeleteConfirmation from "../components/DeleteConfirmation";
 import { useMutation, useQueryClient } from "react-query";
 import { deleteTask } from "../api/TasksApi";
 import TaskDetail from "../components/TaskDetail";
+import UpdateTask from "../components/UpdateTask";
 
 const TaskListPage: React.FC = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [deleteTaskId, setDeleteTaskId] = useState<number | null>(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null); 
 
   const queryClient = useQueryClient();
 
-  const [page, setPage] = useState("1");
-  const [pageSize, setPageSize] = useState("5");
-  const [query, setQuery] = useState("");
+  const [page, setPage] = useState('1');
+  const [pageSize, setPageSize] = useState('5');
+  const [query, setQuery] = useState('');
   const { data: tasks, isLoading } = useQuery(
-    ["tasks", page, pageSize, query],
+    ['tasks', page, pageSize, query],
     () => getAllTasks(page, pageSize, query)
   );
 
@@ -45,18 +47,18 @@ const TaskListPage: React.FC = () => {
     deleteTask,
     {
       onSuccess: () => {
-        queryClient.invalidateQueries("tasks");
-        enqueueSnackbar("Task deleted successfully", { variant: "success" });
+        queryClient.invalidateQueries('tasks');
+        enqueueSnackbar('Task deleted successfully', { variant: 'success' });
         setDeleteConfirmationOpen(false);
       },
       onError: () => {
-        enqueueSnackbar("Failed to delete task", { variant: "error" });
+        enqueueSnackbar('Failed to delete task', { variant: 'error' });
         setDeleteConfirmationOpen(false);
       },
     }
   );
-  const [openModal, setOpenModal] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [openDetails, setOpenDetails] = useState(false);
+  const [openUpdate, setOpenUpdate] = useState(false);
 
   const handlePageChange = (newPage: string) => {
     setPage(newPage);
@@ -72,11 +74,11 @@ const TaskListPage: React.FC = () => {
 
   const handleRowClick = (task: Task) => {
     setSelectedTask(task);
-    setOpenModal(true);
+    setOpenDetails(true);
   };
 
   const handleCloseModal = () => {
-    setOpenModal(false);
+    setOpenDetails(false);
   };
 
   const handleDeleteClick = (taskId: number) => {
@@ -90,10 +92,15 @@ const TaskListPage: React.FC = () => {
     }
   };
 
+  const handleUpdateClick = (task: Task) => {
+    setSelectedTask(task);
+    setOpenUpdate(true);
+  };
+
   return (
     <div>
       <Typography variant="h4">Task List</Typography>
-      <div style={{ marginBottom: "16px" }}>
+      <div style={{ marginBottom: '16px' }}>
         <TextField
           type="text"
           value={query}
@@ -122,7 +129,7 @@ const TaskListPage: React.FC = () => {
               <TableRow key={task.id}>
                 <TableCell
                   onClick={() => handleRowClick(task)}
-                  style={{ cursor: "pointer" }}
+                  style={{ cursor: 'pointer' }}
                 >
                   {task.title}
                 </TableCell>
@@ -133,7 +140,11 @@ const TaskListPage: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <Box display="flex" justifyContent="center">
-                    <IconButton color="primary">
+                    <IconButton 
+                    color="primary"
+                    onClick={() => handleUpdateClick(task)}
+
+                    >
                       <EditIcon />
                     </IconButton>
                     <IconButton
@@ -151,7 +162,7 @@ const TaskListPage: React.FC = () => {
         </Table>
       </TableContainer>
       <div
-        style={{ marginTop: "16px", display: "flex", justifyContent: "center" }}
+        style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}
       >
         <Pagination
           count={tasks?.totalPages}
@@ -162,7 +173,7 @@ const TaskListPage: React.FC = () => {
         />
       </div>
       <div
-        style={{ marginTop: "16px", display: "flex", justifyContent: "center" }}
+        style={{ marginTop: '16px', display: 'flex', justifyContent: 'center' }}
       >
         <Select
           value={pageSize}
@@ -175,10 +186,17 @@ const TaskListPage: React.FC = () => {
         </Select>
       </div>
       <TaskDetail
-        open={openModal}
+        open={openDetails}
         task={selectedTask}
         onClose={handleCloseModal}
       />
+      {selectedTask && (
+        <UpdateTask
+          open={openUpdate}
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+        />
+      )}
       <DeleteConfirmation
         open={deleteConfirmationOpen}
         onConfirm={handleDeleteConfirm}

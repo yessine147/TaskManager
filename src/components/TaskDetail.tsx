@@ -58,7 +58,7 @@ const TaskDetail: React.FC<Props> = ({ open, task, onClose }) => {
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle className="text-center">
-        <Typography variant="h5">{task?.title}</Typography>
+        <Typography>{task?.title}</Typography>
         <IconButton
           onClick={onClose}
           sx={{ position: "absolute", right: 0, top: 0 }}
